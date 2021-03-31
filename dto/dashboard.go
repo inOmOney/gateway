@@ -15,3 +15,10 @@ type DashServiceStatItemOutput struct {
 	Name string`json:"name"`
 	Value int`json:"value"`
 }
+
+type DashPanelOutput struct{
+	CurrentQps int64	`json:"currentQps"`
+	TodayRequestNum int64 `json:"todayRequestNum"`
+	ServiceNum int `json:"serviceNum"`
+	AppNum int `json:"appNum"`
+}

@@ -1333,3 +1333,4 @@
 [WARN][2021-03-15T17:24:10.000][config.go:62] 服务列表更新:%!(EXTRA []string=[http://127.0.0.1:2003 http://127.0.0.1:2004])
 [WARN][2021-03-15T17:24:11.001][config.go:62] 服务列表更新:%!(EXTRA []string=[http://127.0.0.1:2003])
 [WARN][2021-03-15T17:24:11.001][config.go:62] 服务列表更新:%!(EXTRA []string=[])
+[ERROR][2021-03-31T11:50:40.680][log.go:74] _com_mysql_success||spanid=6aa5ba434c8254f3||sql=SELECT load_type,count(*) as value FROM gateway_service_info WHERE (is_delete=?) GROUP BY load_type||bind=[0]||proc_time=14.930905||traceid=0ac64b3c6063f17fd2e44d544b0ba6b0||cspanid=

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	dlog "gateway/log"
 	"github.com/e421083458/gorm"
+	"github.com/gomodule/redigo/redis"
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"os"
@@ -58,12 +59,13 @@ type RedisMapConf struct {
 }
 
 type RedisConf struct {
-	ProxyList    []string `mapstructure:"proxy_list"`
-	Password     string   `mapstructure:"password"`
-	Db           int      `mapstructure:"db"`
-	ConnTimeout  int      `mapstructure:"conn_timeout"`
-	ReadTimeout  int      `mapstructure:"read_timeout"`
-	WriteTimeout int      `mapstructure:"write_timeout"`
+	ProxyList   []string `mapstructure:"proxy_list"`
+	Db          int      `mapstructure:"db"`
+	Password    string   `mapstructure:"password"`
+	ActiveMax   int      `mapstructure:"active_max"`
+	IdleMax     int      `mapstructure:"idle_max"`
+	IdleTimeout int      `mapstructure:"idle_timeout"`
+	Wait        bool     `mapstructure:"wait"`
 }
 
 //全局变量
@@ -72,9 +74,12 @@ var DBMapPool map[string]*sql.DB
 var GORMMapPool map[string]*gorm.DB
 var DBDefaultPool *sql.DB
 var GORMDefaultPool *gorm.DB
+var ViperConfMap map[string]*viper.Viper
+
+//redis相关
 var ConfRedis *RedisConf
 var ConfRedisMap *RedisMapConf
-var ViperConfMap map[string]*viper.Viper
+var RedisPoolMap map[string]*redis.Pool
 
 //获取基本配置信息
 func GetBaseConf() *BaseConf {
@@ -128,22 +133,43 @@ func InitBaseConf(path string) error {
 	return nil
 }
 
-//
-//func InitLogger(path string) error {
-//	if err := dlog.SetupDefaultLogWithFile(path); err != nil {
-//		panic(err)
-//	}
-//	dlog.SetLayout("2006-01-02T15:04:05.000")
-//	return nil
-//}
-
-func InitRedisConf(path string) error {
+func InitRedisConfAndPool(path string) error {
 	ConfRedis := &RedisMapConf{}
 	err := ParseConfig(path, ConfRedis)
 	if err != nil {
 		return err
 	}
 	ConfRedisMap = ConfRedis
+	if ConfRedisMap != nil && ConfRedisMap.List != nil {
+		RedisPoolMap = make(map[string]*redis.Pool)
+		for confName, cfg := range ConfRedisMap.List {
+			RedisPoolMap[confName] = &redis.Pool{
+				MaxIdle:   cfg.IdleMax,
+				MaxActive: cfg.ActiveMax,
+				Dial: func() (redis.Conn, error) {
+					c, err := redis.Dial("tcp", cfg.ProxyList[0])
+					if err != nil {
+						return nil, err
+					}
+					if cfg.Password != "" {
+						if _, err := c.Do("AUTH", cfg.Password); err != nil {
+							c.Close()
+							return nil, err
+						}
+					}
+					if cfg.Db != 0 {
+						if _, err := c.Do("SELECT", cfg.Db); err != nil {
+							c.Close()
+							return nil, err
+						}
+					}
+					return c, nil
+				},
+				IdleTimeout: 1 * time.Second,
+				Wait:        true,
+			}
+		}
+	}
 	return nil
 }
 

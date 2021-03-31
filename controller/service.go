@@ -89,7 +89,7 @@ func (service *ServiceController) ServiceList(c *gin.Context) {
 		ipList := strings.Split(outLoadBalance.IpList, ",")
 
 		//todo qps 和qpd
-
+		counter := public.FlowCountHandler.GetServiceCountHandler(listItem.ServiceName, c)
 		//汇总
 		outItem := dto.ServiceListItemOutput{
 			ID:          listItem.ID,
@@ -97,8 +97,8 @@ func (service *ServiceController) ServiceList(c *gin.Context) {
 			ServiceName: listItem.ServiceName,
 			ServiceDesc: listItem.ServiceDesc,
 			ServiceAddr: serviceAddr,
-			//Qps:         counter.QPS,
-			//Qpd:         counter.TotalCount,
+			Qps:         counter.Qps,
+			Qpd:         counter.DayTotal,
 			TotalNode: len(ipList),
 		}
 		outList = append(outList, outItem)

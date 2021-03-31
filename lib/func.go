@@ -71,8 +71,8 @@ func InitModule(configPath string, modules []string) error {
 
 	// 加载redis配置
 	if InArrayString("redis", modules) {
-		if err := InitRedisConf(GetConfPath("redis_map")); err != nil {
-			fmt.Printf("[ERROR] %s%s\n", time.Now().Format(TimeFormat), " InitRedisConf:"+err.Error())
+		if err := InitRedisConfAndPool(GetConfPath("redis_map")); err != nil {
+			fmt.Printf("[ERROR] %s%s\n", time.Now().Format(TimeFormat), " InitRedisConfAndPool:"+err.Error())
 		}
 	}
 

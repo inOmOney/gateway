@@ -22,6 +22,26 @@ type ServiceInfo struct {
 	IsDelete    int8      `json:"is_delete" description:"是否已删除；0：否；1：是"`
 }
 
+func (serviceInfo *ServiceInfo) ServiceNum(c *gin.Context, db *sql.DB)(int,error){
+	table := "gateway_service_info"
+	query := []string{"count(*) as serviceNum"}
+	where := map[string]interface{}{
+		"is_delete":    0,
+	}
+	cond, vals, err := builder.BuildSelect(table, where, query)
+	if err!=nil {
+		return 0, err
+	}
+	row, err := lib.DBQuery(public.GetGinTraceContext(c), db, cond, vals...)
+	var ServiceNum int
+	row.Next()
+	err = row.Scan(&ServiceNum)
+	if err!=nil {
+		return 0,err
+	}
+	return ServiceNum,nil
+}
+
 func (serviceInfo *ServiceInfo) ServiceInfoPage(c *gin.Context, db *sql.DB, param *dto.ServiceListInput) ([]ServiceInfo, error) {
 
 	// select * from gateway_service_info where service_name like %info% or service_desc like &info &&
