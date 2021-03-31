@@ -33,7 +33,7 @@ func init() {
 
 func (o *FlowCountManager) GetServiceCountHandler(serviceName string, c *gin.Context) *FlowCountInfo {
 	countHandler, ok := o.FlowCountMap[serviceName]
-			rdb, _ := lib.RedisConnFactory("default")
+	rdb, _ := lib.RedisConnFactory("default")
 
 	if ok {
 		return countHandler
@@ -103,9 +103,7 @@ func (o *FlowCountInfo) GetDayKey() string {
 //FlowCountHour_28_00_[ServiceName]
 func (o *FlowCountInfo) GetHourKey() string {
 	hourStr := time.Now().Format("0215")
-	r := FlowCountHourServicePrefix + hourStr + "_" + o.ServiceName
-	fmt.Println(r)
-	return r
+	return FlowCountHourServicePrefix + hourStr + "_" + o.ServiceName
 }
 
 func GetTodayFlow(serviceName string, redisConn redis.Conn, c *gin.Context) ([]int64, error) {

@@ -109,7 +109,7 @@ func (s *ServiceManager) GetDetailFromReq(c *gin.Context) (*ServiceDetail, error
 		if detail.ServiceInfo.LoadType != public.HttpLoadType {
 			continue
 		}
-		if detail.HTTPRule.Rule == host || strings.HasPrefix(detail.HTTPRule.Rule, path) {
+		if detail.HTTPRule.Rule == host || strings.HasPrefix(path, detail.HTTPRule.Rule ) {
 			return detail, nil
 		}
 	}

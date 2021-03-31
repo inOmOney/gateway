@@ -30,7 +30,7 @@ func GetReverseProxy(c *gin.Context, lb load_balance.LoadBalance) *httputil.Reve
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
 		req.Host = target.Host
-		req.URL.Path = "/base"
+		//req.URL.Path = "/base"
 		if _, ok := req.Header["User-Agent"]; !ok {
 			req.Header.Set("User-Agent", "user-agent")
 		}
