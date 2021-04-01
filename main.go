@@ -33,6 +33,7 @@ func main() {
 	}
 	if *mode == "proxy" {
 		dao.SvcManager.LoadOnceService()
+		dao.AppManagerHandler.LoadOnceAppInfo()
 		go func() {
 			http_proxy_router.HttpServerRun()
 		}()

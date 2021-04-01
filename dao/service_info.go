@@ -73,7 +73,6 @@ func (serviceInfo *ServiceInfo) ServiceInfoPage(c *gin.Context, db *sql.DB, para
 	}
 	rows, err := lib.DBQuery(public.GetGinTraceContext(c), db, cond, vals...)
 	if err != nil {
-
 		return nil, err
 	}
 	var serviceInfos []ServiceInfo
