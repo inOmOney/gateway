@@ -80,5 +80,17 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 		controller.DashBoardRegister(dashboardRouter)
 	}
 
+	appRouter := router.Group("/app")
+	appRouter.Use(
+		middleware.RecoveryMiddleware(),
+		middleware.RequestLog(),
+		sessions.Sessions("mysession", store),
+		middleware.TranslationMiddleware(),
+		middleware.SessionAuthMiddleware(), //验证管理员是否登陆
+	)
+	{
+		controller.APPRegister(appRouter)
+	}
+
 	return router
 }

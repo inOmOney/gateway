@@ -31,6 +31,7 @@ func init() {
 	}
 }
 
+//serviceName 可能为全局统计的常量 或者为 app租户的ID
 func (o *FlowCountManager) GetServiceCountHandler(serviceName string, c *gin.Context) *FlowCountInfo {
 	countHandler, ok := o.FlowCountMap[serviceName]
 	rdb, _ := lib.RedisConnFactory("default")
@@ -47,9 +48,7 @@ func (o *FlowCountManager) GetServiceCountHandler(serviceName string, c *gin.Con
 		total, _ := redis.Int64(lib.RedisLogDo(GetGinTraceContext(c), rdb, "GET", DayKey))
 		countHandler.DayTotal = total
 		countHandler.UnixTime = time.Now().Unix()
-
 	}
-
 	go func() {
 		timer := time.NewTicker(Interval)
 		for true {
@@ -108,15 +107,21 @@ func (o *FlowCountInfo) GetHourKey() string {
 
 func GetTodayFlow(serviceName string, redisConn redis.Conn, c *gin.Context) ([]int64, error) {
 	dayNum := time.Now().Day()
+	dayStr := ""
+	if dayNum < 10{
+		dayStr = "0"+ strconv.Itoa(dayNum)
+	}else{
+		dayStr = strconv.Itoa(dayNum)
+	}
 	hour := time.Now().Hour()
 
 	var result []int64
 	for i := 0; i <= hour; i++ {
 		key := ""
 		if i < 10 {
-			key = FlowCountHourServicePrefix + strconv.Itoa(dayNum) + "0" + strconv.Itoa(i) + "_" + serviceName
+			key = FlowCountHourServicePrefix + dayStr + "0" + strconv.Itoa(i) + "_" + serviceName
 		} else {
-			key = FlowCountHourServicePrefix + strconv.Itoa(dayNum) + strconv.Itoa(i) + "_" + serviceName
+			key = FlowCountHourServicePrefix + dayStr + strconv.Itoa(i) + "_" + serviceName
 		}
 		timeFlow, err := redis.Int64(lib.RedisLogDo(GetGinTraceContext(c), redisConn, "GET", key))
 		if err != nil && err.Error() != "redigo: nil returned" {

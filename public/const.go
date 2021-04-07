@@ -26,8 +26,8 @@ const(
 
 const (
 	Interval = 1 * time.Second //流量统计周期
-	FlowCountDayServicePrefix = "FlowCountDay_" //Redis中的天数统计 FlowCountDay_28_[ServiceName]
-	FlowCountHourServicePrefix = "FlowCountHour_" //Redis中的天数统计 FlowCountHour_28_00_[ServiceName]
+	FlowCountDayServicePrefix = "FlowCountDay_" //Redis中的天数统计 FlowCountDay_7_GlobalFlowCount
+	FlowCountHourServicePrefix = "FlowCountHour_" //Redis中的天数统计 FlowCountHour_0713_GlobalFlowCount
 
 	GlobalFlowCount = "GlobalFlowCount"
 )

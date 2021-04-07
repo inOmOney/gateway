@@ -32,10 +32,18 @@ func (o *DashBoardController) GetPanelGroupData(c *gin.Context) {
 		middleware.ResponseError(c, 2001, err)
 		return
 	}
+
+	app := &dao.App{}
+	count, err := app.TotalCount(c, db)
+	if err != nil {
+		middleware.ResponseError(c, 2001, err)
+		return
+	}
 	out := &dto.DashPanelOutput{
 		CurrentQps:      handler.Qps,
 		TodayRequestNum: handler.DayTotal,
 		ServiceNum:      num,
+		AppNum: count,
 	}
 	middleware.ResponseSuccess(c, out)
 }

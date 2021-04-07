@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/base64"
+	"fmt"
 	"gateway/dao"
 	"gateway/dto"
 	"gateway/lib"
@@ -45,6 +46,9 @@ func (controller *OAuthController) GenericToken(c *gin.Context) {
 		return
 	}
 	parts := strings.Split(string(appSecret), ":")
+
+	temp := dao.AppManagerHandler.AppMap["app_id_a"]
+	fmt.Println(temp)
 	if appInfo, exist := dao.AppManagerHandler.AppMap[parts[0]]; !exist || parts[1] != appInfo.Secret {
 		middleware.ResponseError(c, 2002, errors.New("没有对应的app_id"))
 		return

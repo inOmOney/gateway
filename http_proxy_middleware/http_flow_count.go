@@ -13,11 +13,13 @@ func HttpFlowCount() gin.HandlerFunc{
 			panic("没有设置对应的服务")
 		}
 		// 拿到统计抓手 字段+1
+		// 全局流量统计
 		global := public.FlowCountHandler.GetServiceCountHandler(public.GlobalFlowCount, c)
 		global.Increase()
 
 		detail := service.(*dao.ServiceDetail)
 		// 拿到统计抓手 字段+1
+		// 服务为单位计数
 		handler := public.FlowCountHandler.GetServiceCountHandler(detail.ServiceInfo.ServiceName, c)
 		handler.Increase()
 

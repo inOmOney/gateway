@@ -137,7 +137,7 @@ func (config *LoadBalanceConfig) WatchAlive() { // 定时探测服务
 				fmt.Printf("服务列表更新: %s\n", config.Alive)
 				config.ob.Update()
 			}
-			fmt.Printf("服务正常\t")
+			fmt.Printf("服务探针检测 各项服务正常")
 			time.Sleep(5 * time.Second)
 		}
 	}()

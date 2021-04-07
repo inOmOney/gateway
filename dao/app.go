@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"gateway/dto"
 	"gateway/lib"
 	"gateway/public"
 	"github.com/didi/gendry/builder"
@@ -11,44 +12,49 @@ import (
 	"time"
 )
 
-type AppManager struct{
+type AppManager struct {
 	AppMap map[string]*App // key:app_id, value:secret
-	Init sync.Once
-
+	Init   sync.Once
 }
+
 var AppManagerHandler *AppManager
 
-func init(){
+func init() {
 	AppManagerHandler = &AppManager{
 		AppMap: map[string]*App{},
-		Init: sync.Once{},
-	}
-
-}
-func (m *AppManager) LoadOnceAppInfo(){
-	c, _ := gin.CreateTestContext(httptest.NewRecorder())
-	db, _ := lib.GetDBPool("default")
-	param := &APPListInput{
-		PageSize: 9999,
-		PageNo: 1,
-	}
-	app := &App{}
-	apps, err := app.FindByPage(c, param, db)
-	if err!=nil {
-		panic(err)
-	}
-	for index, value := range apps {
-		AppManagerHandler.AppMap[apps[index].AppID] = &value
+		Init:   sync.Once{},
 	}
 }
 
-func (app *App) FindByPage(c *gin.Context, param *APPListInput, db lib.TDManager) ([]App,error) {
+//将租户根据appid放进map中
+func (m *AppManager) LoadOnceAppInfo() {
+	m.Init.Do(func() {
+		c, _ := gin.CreateTestContext(httptest.NewRecorder())
+		db, _ := lib.GetDBPool("default")
+		param := &dto.APPListInput{
+			PageSize: 9999,
+			PageNo:   1,
+		}
+		app := &App{}
+		apps, err := app.FindByPage(c, param, db)
+		if err != nil {
+			panic(err)
+		}
+		for index, value := range apps {
+			temp := value
+			AppManagerHandler.AppMap[apps[index].AppID] = &temp
+		}
+	})
+}
+
+//按照页码获取租户
+func (app *App) FindByPage(c *gin.Context, param *dto.APPListInput, db lib.TDManager) ([]App, error) {
 	table := "gateway_app"
 	var where map[string]interface{}
-	if  param.Info == ""   {
+	if param.Info == "" {
 		where = map[string]interface{}{
 			"is_delete =": 0,
-			"_orderby":    "id desc",
+			"_orderby":    "id",
 			"_limit":      []uint{uint(param.PageNo - 1), uint(param.PageSize)},
 		}
 	} else {
@@ -72,6 +78,7 @@ func (app *App) FindByPage(c *gin.Context, param *APPListInput, db lib.TDManager
 	if err != nil {
 		return nil, err
 	}
+
 	var a []App
 	if err = scanner.Scan(rows, &a); err != nil {
 		return nil, err
@@ -80,11 +87,27 @@ func (app *App) FindByPage(c *gin.Context, param *APPListInput, db lib.TDManager
 }
 
 
-type APPListInput struct {
-	Info     string `json:"info" form:"info" comment:"查找信息" validate:""`
-	PageSize int    `json:"page_size" form:"page_size" comment:"页数" validate:"required,min=1,max=999"`
-	PageNo   int    `json:"page_no" form:"page_no" comment:"页码" validate:"required,min=1,max=999"`
+func (app *App) TotalCount(c *gin.Context, db lib.TDManager) (int, error){
+	table := "gateway_app"
+	where := map[string]interface{}{
+		"is_delete":0,
+	}
+	query := []string{"count(*)"}
+	cond, vals, err := builder.BuildSelect(table, where, query)
+	rows, err := lib.DBQuery(public.GetGinTraceContext(c), db, cond, vals...)
+	if err != nil {
+		return 0, err
+	}
+	rows.Next()
+	var result int
+	if err =rows.Scan(&result);err!=nil{
+		return 0,nil
+	}
+
+	return result,nil
+
 }
+
 type App struct {
 	ID        int64     `json:"id" gorm:"primary_key"`
 	AppID     string    `json:"app_id" gorm:"column:app_id" description:"租户id	"`
