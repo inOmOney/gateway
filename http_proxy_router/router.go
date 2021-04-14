@@ -28,10 +28,12 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	//todo 限流
 	r.Use(
 		http_proxy_middleware.HttpAccessModeMiddleware(),
-		http_proxy_middleware.HttpFlowCount(),
+		http_proxy_middleware.HttpFlowCount(),	//限流之外的请求也计算进访问量
+		http_proxy_middleware.HttpFlowLimit(),
+
 		http_proxy_middleware.HttpAppJwtValid(),
 		http_proxy_middleware.HttpAppFlowCount(),
-		//http_proxy_middleware.HttpAppLimit(),
+		http_proxy_middleware.HttpAppLimit(),
 		http_proxy_middleware.HttpStripUri(),
 		http_proxy_middleware.HttpRewriteUrl(),
 		http_proxy_middleware.HttpReverseProxyMiddleware(),

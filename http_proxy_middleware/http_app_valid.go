@@ -29,10 +29,10 @@ func HttpAppJwtValid() gin.HandlerFunc {
 			}
 			appMap := dao.AppManagerHandler.AppMap
 			isMatch := false
-			for appID := range appMap {
-				if appID == claim.Issuer {
+			for app := range appMap {
+				if app == claim.Issuer {
 					isMatch = true
-					c.Set("app", appID)
+					c.Set("app", app)
 				}
 			}
 			if !isMatch {

@@ -1,8 +1,8 @@
 package public
 
 import (
-	"fmt"
 	"gateway/lib"
+	"gateway/log"
 	"github.com/gin-gonic/gin"
 	"github.com/gomodule/redigo/redis"
 	"strconv"
@@ -60,6 +60,7 @@ func (o *FlowCountManager) GetServiceCountHandler(serviceName string, c *gin.Con
 			DayKey := countHandler.GetDayKey()
 			HourKey := countHandler.GetHourKey()
 
+			//dashboard模式运行下面代码会无视
 			lib.RedisLogPipelining(GetGinTraceContext(c), rdb, func(conn redis.Conn) {
 				conn.Send("INCRBY", DayKey, flow)
 				conn.Send("EXPIRE", DayKey, 60*60*12*2)
@@ -73,7 +74,7 @@ func (o *FlowCountManager) GetServiceCountHandler(serviceName string, c *gin.Con
 			//3. 更新时间
 			total, err := redis.Int64(lib.RedisLogDo(GetGinTraceContext(c), rdb, "GET", DayKey))
 			if err != nil {
-				fmt.Println("reqCounter.GetDayData err", err)
+				log.Info("reqCounter.GetDayData err", err)
 				continue
 			}
 			now := time.Now().Unix()
