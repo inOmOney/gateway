@@ -1,7 +1,6 @@
 package http_proxy_middleware
 
 import (
-	"fmt"
 	"gateway/dao"
 	"gateway/lib"
 	"gateway/log"
@@ -17,11 +16,10 @@ func HttpAppFlowCount() gin.HandlerFunc {
 		if ok == true {
 			app, _ := appId.(*dao.App)
 			handler := public.FlowCountHandler.GetServiceCountHandler(app.AppID, c)
-			defer handler.Increase() //每次请求对内存中进行周期内访问数量统计，定期推送给redis
+			handler.Increase() //每次请求对内存中进行周期内访问数量统计，定期推送给redis
 			if app.Qpd > 0 {
 				rdb, _ := lib.RedisConnFactory("default")
 				dayKey := handler.GetDayKey()
-				fmt.Println(dayKey)
 				result, err := redis.Int64(lib.RedisLogDo(public.GetGinTraceContext(c), rdb, "GET", dayKey))
 				if err != nil {
 					log.Error("redis读取数据出错")
